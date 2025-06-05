@@ -75,7 +75,7 @@
 <body>
   <h1>Új számla rögzítése</h1>
   <form id="szamlaForm">
-    <input type="text" id="szamlaszam" placeholder="Számlaszám (pl: 12345678-12345678-12345678)" />
+    <input type="text" id="szamlaszam" placeholder="Bankszámlaszám (pl: 12345678-12345678-12345678)" />
     <input type="text" id="kiallitonev" placeholder="Kiállító neve" />
     <input type="text" id="kiallitocim" placeholder="Kiállító címe" />
     <input type="text" id="kiallitoadoszam" placeholder="Kiállító adószáma" />
@@ -89,7 +89,7 @@
     <input type="date" id="teljesites" />
 
     <label for="fizetesiHatarido">Fizetési határidő:</label>
-    <input type="date" id="fizetesiHatarido" />
+    <input type="date" readonly="true" id="fizetesiHatarido" />
     <input type="number" step="0.01" id="vegosszeg" placeholder="Végösszeg (bruttó Ft)" />
     <input type="number" step="0.01" id="afa" placeholder="ÁFA (Ft)" />
     <button type="submit">Mentés</button>
@@ -102,6 +102,25 @@
   <script>
   const szamlaList = document.getElementById('szamlaList');
   const szamlaForm = document.getElementById('szamlaForm');
+    function formatDate(date) {
+      var d = new Date(date)
+      d.setDate(d.getDate()+30)
+        var month = '' + (d.getMonth() + 1)
+        var day = '' + d.getDate()
+        var year = d.getFullYear();
+
+      if (month.length < 2) 
+        month = '0' + month;
+      if (day.length < 2) 
+        day = '0' + day;
+
+      return [year, month, day].join('-');
+    } 
+    const keltezes = document.getElementById('kelt')
+    const hatarido = document.getElementById('fizetesiHatarido')
+    keltezes.addEventListener("change", function(){
+      const keltet = new Date(keltezes.value)
+      hatarido.value = formatDate(keltezes.value)})
 
   function loadSzamlak() {
     axios.get('/szamlak')
@@ -121,16 +140,34 @@
           };
 
           const delBtn = document.createElement('button');
-          delBtn.textContent = 'Töröl';
+          delBtn.textContent = 'Storno';
           delBtn.style.backgroundColor = '#dc3545';
           delBtn.onclick = () => {
-            if (confirm('Biztos törlöd ezt a számlát?')) {
-              axios.delete('/szamlak/' + sz.id)
-                .then(() => {
-                  alert('Törölve');
+            if (confirm('Biztos stornozod ezt a számlát?')) {
+              sz.vegosszeg = -sz.vegosszeg
+              document.getElementById('szamlaszam').value = sz.szamlaszam;
+              document.getElementById('kiallitonev').value = sz.kiallitonev;
+              document.getElementById('kiallitocim').value = sz.kiallitocim;
+              document.getElementById('kiallitoadoszam').value = sz.kiallitoadoszam;
+              document.getElementById('vevonev').value = sz.vevonev;
+              document.getElementById('vevocim').value = sz.vevocim;
+              document.getElementById('vevoadoszam').value = sz.vevoadoszam;
+              document.getElementById('kelt').value = sz.kelt;
+              document.getElementById('teljesites').value = sz.teljesites;
+              document.getElementById('fizetesiHatarido').value = sz.fizetesiHatarido;
+              document.getElementById('vegosszeg').value = sz.vegosszeg;
+              document.getElementById('afa').value = sz.afa;
+
+              szamlaForm.dataset.editId = sz.id;
+              const editId = szamlaForm.dataset.editId;
+              
+              const request = axios.put('/szamlak/' + editId, sz)
+              request
+              .then(() => {
+                  alert('Számla stornozva');
                   loadSzamlak();
-                })
-                .catch(err => alert('Hiba: ' + err));
+              })
+              .catch(err => alert('Hiba mentéskor: ' + err));
             }
           };
 
@@ -182,13 +219,11 @@
       afa: parseFloat(document.getElementById('afa').value)
     };
 
-    // Ellenőrzések: ne legyen üres mező
     if (Object.values(adat).some(v => !v && v !== 0)) {
       alert('Kérlek, töltsd ki az összes mezőt!');
       return;
     }
 
-    // Regexek
     const szamlaszamRegex = /^\d{8}-\d{8}-\d{8}$/;
     const adoszamRegex = /^\d{8}-\d{1}-\d{2}$/;
 
@@ -217,7 +252,6 @@
       .catch(err => alert('Hiba mentéskor: ' + err));
   });
 
-  // Számlaszám valós idejű formázás
   const szamlaszamInput = document.getElementById('szamlaszam');
   szamlaszamInput.addEventListener('input', () => {
     let value = szamlaszamInput.value.replace(/\D/g, '');
@@ -229,7 +263,6 @@
     szamlaszamInput.value = formatted;
   });
 
-  // Adószám valós idejű formázás (kiállító)
   const kiallitoadoszamInput = document.getElementById('kiallitoadoszam');
   kiallitoadoszamInput.addEventListener('input', () => {
     let value = kiallitoadoszamInput.value.replace(/\D/g, '');
@@ -241,7 +274,6 @@
     kiallitoadoszamInput.value = formatted;
   });
 
-  // Adószám valós idejű formázás (vevő)
   const vevoadoszamInput = document.getElementById('vevoadoszam');
   vevoadoszamInput.addEventListener('input', () => {
     let value = vevoadoszamInput.value.replace(/\D/g, '');
