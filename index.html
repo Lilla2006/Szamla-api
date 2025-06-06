@@ -170,31 +170,10 @@
               .catch(err => alert('Hiba mentéskor: ' + err));
             }
           };
-          // const editBtn = document.createElement('button');
-          // editBtn.textContent = 'Szerkesztés';
-
-          // editBtn.style.backgroundColor = '#ffc107';
-          // editBtn.onclick = () => {
-          //   document.getElementById('szamlaszam').value = sz.szamlaszam;
-          //   document.getElementById('kiallitonev').value = sz.kiallitonev;
-          //   document.getElementById('kiallitocim').value = sz.kiallitocim;
-          //   document.getElementById('kiallitoadoszam').value = sz.kiallitoadoszam;
-          //   document.getElementById('vevonev').value = sz.vevonev;
-          //   document.getElementById('vevocim').value = sz.vevocim;
-          //   document.getElementById('vevoadoszam').value = sz.vevoadoszam;
-          //   document.getElementById('kelt').value = sz.kelt;
-          //   document.getElementById('teljesites').value = sz.teljesites;
-          //   document.getElementById('fizetesiHatarido').value = sz.fizetesiHatarido;
-          //   document.getElementById('vegosszeg').value = sz.vegosszeg;
-          //   document.getElementById('afa').value = sz.afa;
-
-          //   szamlaForm.dataset.editId = sz.id;
-          // };
 
           li.appendChild(span);
           li.appendChild(viewBtn);
           li.appendChild(delBtn);
-          // li.appendChild(editBtn);
           szamlaList.appendChild(li);
         });
       })
