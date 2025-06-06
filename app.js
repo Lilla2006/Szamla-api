@@ -12,7 +12,6 @@ const PORT = 8088
 app.use(express.json())
 app.use(express.static(__dirname))
 
-// === API: /szamlak ===
 app.get('/szamlak', (req, res) => {
   try {
     const szamlak = db.getSzamlak()
